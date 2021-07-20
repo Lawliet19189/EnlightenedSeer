@@ -74,15 +74,19 @@ if select_event == 'MS-marco Articles':
         G, roots_list, ids_question_map, question_ids_map, track_leafs = load_artefacts(version=1)
 
     st.title("Search Query Completion using only MS-MARCO corpus articles")
-
-    query = st.text_input("Enter Search Query", "hwat ia the bst way to file")
+    query = st.text_input("Enter Search Query", "hwat ia the lst day to file")
     if st.button("Autocomplete Query Suggest!"):
         query = query.lower()
         with st.spinner(text='Suggesting Autocomplete query'):
             start_time = timeit.default_timer()
             suggested_queries = predict_query(query, G, roots_list, ids_question_map, track_leafs)
             end_time = timeit.default_timer()
-        st.warning("Showing 10 results out of " + str(len(suggested_queries)) + " (Not-sorted by any relevance)")
+        if suggested_queries!=[]:
+            st.warning("Showing " + str(min(len(suggested_queries), 10)) + " results out of " + str(
+                len(suggested_queries)) + " (Not-sorted by any relevance)")
+        else:
+            st.warning("Sorry! No Suggested queries Found!")
+
         annotated_text(("Suggested Queries " + "in " + str(round(end_time - start_time, 2)) + "s", "", "#afa"), height=40)
         st.markdown("""---""")
         #st.write(suggested_queries)
@@ -95,7 +99,7 @@ elif select_event == 'MS-marco Query & Articles':
 
     st.title("Search Query Completion using MS-MARCO corpus articles & user queries")
 
-    query = st.text_input("Enter Search Query", "hwat ia the bst way to file")
+    query = st.text_input("Enter Search Query", "hwat ia the lst day to file")
     if st.button("Autocomplete Query Suggest!"):
         query = query.lower()
 
@@ -103,8 +107,12 @@ elif select_event == 'MS-marco Query & Articles':
             start_time = timeit.default_timer()
             suggested_queries = predict_query(query, G, roots_list, ids_question_map, track_leafs)[:500]
             end_time = timeit.default_timer()
-            suggested_queries, extra_time = rank_suggested_queries(embed, query, suggested_queries, kmeans)
-        st.warning("Showing 10 results out of " + str(len(suggested_queries)) + " (Sorted by relevance)")
+            extra_time = 0
+            if suggested_queries!=[]:
+                suggested_queries, extra_time = rank_suggested_queries(embed, query, suggested_queries, kmeans)
+                st.warning("Showing " + str(min(len(suggested_queries), 10))  + " results out of " + str(len(suggested_queries)) + " (Sorted by relevance)")
+            else:
+                st.warning("Sorry! No Suggested queries Found!")
         annotated_text(("Suggested Queries " + "in " + str(round(end_time - start_time + extra_time, 2)) + "s", "", "#afa"), height=40)
         st.markdown("""---""")
         #st.write(suggested_queries)
@@ -112,4 +120,7 @@ elif select_event == 'MS-marco Query & Articles':
             annotated_text((str(idx+1) + ". ", "", "#8ef"), (q, "", "#faa"), height=40)
         #st.write("Yup!")
 else:
-    st.header("Please select a dataset from left-navbar dropbox")
+    st.header("Welcome to our Query Autocomplete Demo! Please select a dataset from left-navbar dropbox")
+    st.info("For implementation details of the demo, please refer our Github repository: https://github.com/Lawliet19189/EnlightenedSeer")
+    st.markdown("""---""")
+    st.warning("Since the demo is deployed locally, the UI/UX will have a slight delay!")
